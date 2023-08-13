@@ -1,0 +1,48 @@
+ * {
+     box-sizing: border-box;
+ }
+
+ body,
+ h1,
+ h2,
+ p {
+     margin: 0;
+     padding: 0;
+ }
+
+ body {
+     display: grid;
+     justify-content: center;
+     align-items: center;
+     min-height: 100vh;
+     background-color: rgb(80, 107, 27);
+     text-align: center;
+ }
+
+ h1 {
+     color: white;
+ }
+
+ img {
+     width: 150px;
+     padding-left: 10px;
+ }
+
+
+
+ .player,
+ .house {
+     font-size: 2rem;
+     font-weight: 700;
+     color: white;
+     margin-top: 40px;
+     margin-bottom: 20px;
+ }
+
+ button {
+     width: 7rem;
+     height: 4rem;
+     margin-top: 20px;
+     font-weight: 700;
+     font-size: 2rem;
+ }
