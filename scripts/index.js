@@ -14,8 +14,9 @@ class GameManager {
     dealer.DealCards(deckOfCards);
     manager.CompareCards();
   }
-  NextPlay() {
-    dealer.DealCards(deckOfCards);
+  NextHand() {
+    render.ClearHand();
+    render.CardFaceUp();
     manager.CompareCards();
   }
   War() {}
@@ -40,7 +41,8 @@ class GameManager {
     let computerScore = this.EvaluateCards(computer.card);
     let playerScore = this.EvaluateCards(player.card);
 
-    //the draw check is if there was a prior draw it needs to know //TODO why?
+    //the "if (this.draw)" check is if there was a draw last round so it will know to add
+    //those draw cards to the winners deck
     if (computerScore > playerScore) {
       if (this.draw) {
         this.WhenDraw(computer.hand);
@@ -65,14 +67,17 @@ class GameManager {
   }
 
   WhenDraw(winner) {
+    //adding all the cards that were laid out during the draw duel onto the winners deck
     winner.unshift(...computer.draw);
     winner.unshift(...player.draw);
 
     player.draw.length = 0;
     computer.draw.length = 0;
+    this.draw = false;
   }
-
+  //FIXME I think this should be the dealers job
   DrawDeal() {
+    //this puts the original cards into the draw array pile before dealing the rest out
     computer.draw.push(computer.card);
     player.draw.push(player.card);
     for (let i = 1; i < dealer.drawCount; i++) {
@@ -165,44 +170,38 @@ class Render {
     cardImg.src = "images/" + player.card + ".png";
     playerCards.append(cardImg);
   }
+  //TODO I would like to show how many cards are in the stack. Thinking off set each card a couple pixels
+  //so you can see them and get an idea how good or bad your stack is getting
   ClearHand() {
-    // if (computersCards.parentNode)
-    //   //BUG I need a way to clean up when there was a draw this only cleans one spot
-    //   computersCards.removeChild(computersCards.lastElementChild);
     while (computersCards.firstChild) {
       computersCards.removeChild(computersCards.firstChild);
     }
-    if (playerCards.parentNode)
-      playerCards.removeChild(playerCards.lastElementChild);
+    while (playerCards.firstChild) {
+      playerCards.removeChild(playerCards.firstChild);
+    }
+    this.CardFaceDown();
   }
 }
 
-function drawCleanup() {
-  for (let i = 0; i <= dealer.drawCount; i++) {
-    render.ClearHand();
-  }
-  aDraw = false;
-  cDraw.length = 0;
-  pDraw.length = 0;
-  dealer.drawCount = 3;
-}
 const manager = new GameManager();
 const deckOfCards = new Deck();
 const dealer = new Dealer();
 const render = new Render();
 const computer = new Players();
 const player = new Players();
-
+//=============================================Starting Line========================================================
 manager.StartGame();
 
 btn.addEventListener("click", () => {
-  render.ClearHand();
-  render.CardFaceUp();
-  manager.CompareCards();
+  // render.ClearHand();
+  // render.CardFaceUp();
+  // manager.CompareCards();
+  manager.NextHand();
 });
 
 //TODO and bugs
 //I need a way to check when someone wins
 //also a strategy for when a player can't fulfill a draw war. as in they don't have the required amount of cards
-//should I make them lose or adjust the cards to fit the lower card users needs
+//If out of cards or not enough in a duel draw they loose
 //maybe a little better user interface work as well
+//maybe give a different background color the the player who is getting close to loosing or winning
