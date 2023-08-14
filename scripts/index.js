@@ -5,17 +5,9 @@ const playerCards = document.getElementById("player-cards");
 const btn = document.getElementById("btn");
 const winText = document.querySelector(".won");
 
-// const deck = [];
-// const computersHand = [];
-// const playersHand = [];
-// const cDraw = [];//FIXME need to decide on how to handle these
-// const pDraw = [];
-
-let computersCard;
-let playersCard;
-// let aDraw = false;
-let drawCount = 3;
 class GameManager {
+  draw = false;
+
   StartGame() {
     deckOfCards.BuildDeck();
     deckOfCards.ShuffleDeck();
@@ -27,7 +19,9 @@ class GameManager {
     manager.CompareCards();
   }
   War() {}
-  //FIXME this never needs to be seen by any other then the compareCards method I think
+  //evaluateCards gives the cards a number score since face cards mean nothing.
+  //it gives face cards a number to be evaluated which face card is higher if there is one
+  //it then returns the card as a number to then check which is hight or a draw
   EvaluateCards(theCard) {
     const cHandIndex = theCard.indexOf("-");
     let t = theCard.slice(0, cHandIndex);
@@ -43,53 +37,47 @@ class GameManager {
     console.log(`Computer has ${computer.hand.length} with ${computer.hand}`); //TODO debugging
     console.log(`Player has ${player.hand.length} with ${player.hand}`);
 
-    //evaluateCards gives the cards a number score since face cards mean nothing.
-    //it gives face cards a number to be evaluated which face card is higher if there is one
-    //it then returns the card as a number to then check which is hight or a draw
-    let computerScore = this.EvaluateCards(computer.card); //FIXME need to do something different with these
+    let computerScore = this.EvaluateCards(computer.card);
     let playerScore = this.EvaluateCards(player.card);
 
+    //the draw check is if there was a prior draw it needs to know //TODO why?
     if (computerScore > playerScore) {
-      // if (aDraw) {
-      //   //FIXME it wouldn't be a draw if the first if is true
-      //   whenDraw(computer.hand);
-      // }
+      if (this.draw) {
+        this.WhenDraw(computer.hand);
+      }
       computer.hand.unshift(player.card);
       computer.hand.unshift(computer.card);
       winText.textContent = "Computer wins this round";
-      console.log("computer Wins");
+      console.log("computer Wins"); //TODO debugging
     } else if (playerScore > computerScore) {
-      // if (aDraw) {
-      //   whenDraw(player.hand);
-      // }
+      if (this.draw) {
+        this.WhenDraw(player.hand);
+      }
       player.hand.unshift(computer.card);
       player.hand.unshift(player.card);
       winText.textContent = "You won this round";
-      console.log("You won!!!");
+      console.log("You won!!!"); //TODO debugging
     } else {
-      console.log("draw");
-      // if (aDraw) {
-      // }
-      drawCount *= 3;
-      // aDraw = true;
-
+      console.log("draw"); //TODO debugging
+      this.draw = true;
       this.DrawDeal();
     }
   }
 
   WhenDraw(winner) {
-    for (let i = 0; i < drawCount; i++) {
-      winner.unshift(cDraw[i]);
-      winner.unshift(pDraw[i]);
-    }
+    winner.unshift(...computer.draw);
+    winner.unshift(...player.draw);
+
+    player.draw.length = 0;
+    computer.draw.length = 0;
   }
 
   DrawDeal() {
-    // cDraw.push(computer.card);
-    // pDraw.push(player.card);
-    for (let i = 1; i < drawCount; i++) {
-      computer.card = computer.hand.pop();
-      player.card = player.hand.pop();
+    computer.draw.push(computer.card);
+    player.draw.push(player.card);
+    for (let i = 1; i < dealer.drawCount; i++) {
+      computer.draw.push(computer.hand.pop());
+      player.draw.push(player.hand.pop());
       render.CardFaceDown();
     }
     render.CardFaceUp();
@@ -139,6 +127,8 @@ class Players {
   card;
 }
 class Dealer {
+  drawCount = 3;
+
   DealCards(dc) {
     for (let i = 0; i < dc.deck.length; i++) {
       if (i % 2 == 0) computer.hand.push(dc.deck[i]);
@@ -176,21 +166,25 @@ class Render {
     playerCards.append(cardImg);
   }
   ClearHand() {
-    if (computersCards.parentNode)
-      computersCards.removeChild(computersCards.lastElementChild);
+    // if (computersCards.parentNode)
+    //   //BUG I need a way to clean up when there was a draw this only cleans one spot
+    //   computersCards.removeChild(computersCards.lastElementChild);
+    while (computersCards.firstChild) {
+      computersCards.removeChild(computersCards.firstChild);
+    }
     if (playerCards.parentNode)
       playerCards.removeChild(playerCards.lastElementChild);
   }
 }
 
 function drawCleanup() {
-  for (let i = 0; i <= drawCount; i++) {
+  for (let i = 0; i <= dealer.drawCount; i++) {
     render.ClearHand();
   }
   aDraw = false;
   cDraw.length = 0;
   pDraw.length = 0;
-  drawCount = 3;
+  dealer.drawCount = 3;
 }
 const manager = new GameManager();
 const deckOfCards = new Deck();
@@ -200,17 +194,9 @@ const computer = new Players();
 const player = new Players();
 
 manager.StartGame();
-// deckOfCards.BuildDeck();
-// deckOfCards.ShuffleDeck();
-// dealer.DealCards(deckOfCards);
-// manager.CompareCards();
 
 btn.addEventListener("click", () => {
-  // if (aDraw) {
-  //   drawCleanup();
-  // } else {
   render.ClearHand();
-  // }
   render.CardFaceUp();
   manager.CompareCards();
 });
@@ -220,4 +206,3 @@ btn.addEventListener("click", () => {
 //also a strategy for when a player can't fulfill a draw war. as in they don't have the required amount of cards
 //should I make them lose or adjust the cards to fit the lower card users needs
 //maybe a little better user interface work as well
-//maybe clean up some of the globals and pass them through the functions as needed
