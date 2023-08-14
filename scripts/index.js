@@ -6,16 +6,96 @@ const btn = document.getElementById("btn");
 const winText = document.querySelector(".won");
 
 // const deck = [];
-const computersHand = [];
-const playersHand = [];
-const cDraw = [];
-const pDraw = [];
+// const computersHand = [];
+// const playersHand = [];
+// const cDraw = [];//FIXME need to decide on how to handle these
+// const pDraw = [];
 
 let computersCard;
 let playersCard;
-let aDraw = false;
+// let aDraw = false;
 let drawCount = 3;
+class GameManager {
+  StartGame() {
+    deckOfCards.BuildDeck();
+    deckOfCards.ShuffleDeck();
+    dealer.DealCards(deckOfCards);
+    manager.CompareCards();
+  }
+  NextPlay() {
+    dealer.DealCards(deckOfCards);
+    manager.CompareCards();
+  }
+  War() {}
+  //FIXME this never needs to be seen by any other then the compareCards method I think
+  EvaluateCards(theCard) {
+    const cHandIndex = theCard.indexOf("-");
+    let t = theCard.slice(0, cHandIndex);
+    console.log(t);
+    if (t == "A") return 14;
+    else if (t == "K") return 13;
+    else if (t == "Q") return 12;
+    else if (t == "J") return 11;
+    return +t;
+  }
 
+  CompareCards() {
+    console.log(`Computer has ${computer.hand.length} with ${computer.hand}`); //TODO debugging
+    console.log(`Player has ${player.hand.length} with ${player.hand}`);
+
+    //evaluateCards gives the cards a number score since face cards mean nothing.
+    //it gives face cards a number to be evaluated which face card is higher if there is one
+    //it then returns the card as a number to then check which is hight or a draw
+    let computerScore = this.EvaluateCards(computer.card); //FIXME need to do something different with these
+    let playerScore = this.EvaluateCards(player.card);
+
+    if (computerScore > playerScore) {
+      // if (aDraw) {
+      //   //FIXME it wouldn't be a draw if the first if is true
+      //   whenDraw(computer.hand);
+      // }
+      computer.hand.unshift(player.card);
+      computer.hand.unshift(computer.card);
+      winText.textContent = "Computer wins this round";
+      console.log("computer Wins");
+    } else if (playerScore > computerScore) {
+      // if (aDraw) {
+      //   whenDraw(player.hand);
+      // }
+      player.hand.unshift(computer.card);
+      player.hand.unshift(player.card);
+      winText.textContent = "You won this round";
+      console.log("You won!!!");
+    } else {
+      console.log("draw");
+      // if (aDraw) {
+      // }
+      drawCount *= 3;
+      // aDraw = true;
+
+      this.DrawDeal();
+    }
+  }
+
+  WhenDraw(winner) {
+    for (let i = 0; i < drawCount; i++) {
+      winner.unshift(cDraw[i]);
+      winner.unshift(pDraw[i]);
+    }
+  }
+
+  DrawDeal() {
+    // cDraw.push(computer.card);
+    // pDraw.push(player.card);
+    for (let i = 1; i < drawCount; i++) {
+      computer.card = computer.hand.pop();
+      player.card = player.hand.pop();
+      render.CardFaceDown();
+    }
+    render.CardFaceUp();
+    this.CompareCards();
+  }
+}
 class Deck {
   deck = [];
 
@@ -61,9 +141,9 @@ class Players {
 class Dealer {
   DealCards(dc) {
     for (let i = 0; i < dc.deck.length; i++) {
-      if (i % 2 == 0) computersHand.push(dc.deck[i]);
+      if (i % 2 == 0) computer.hand.push(dc.deck[i]);
       else {
-        playersHand.push(dc.deck[i]);
+        player.hand.push(dc.deck[i]);
       }
     }
     render.CardFaceDown();
@@ -83,16 +163,16 @@ class Render {
   }
   CardFaceUp() {
     let cardImg = document.createElement("img");
-    computersCard = computersHand.pop();
+    computer.card = computer.hand.pop();
 
-    cardImg.src = "images/" + computersCard + ".png";
+    cardImg.src = "images/" + computer.card + ".png";
     computersCards.append(cardImg);
     ///--------------players cards-----------------------------
 
     cardImg = document.createElement("img");
-    playersCard = playersHand.pop();
+    player.card = player.hand.pop();
 
-    cardImg.src = "images/" + playersCard + ".png";
+    cardImg.src = "images/" + player.card + ".png";
     playerCards.append(cardImg);
   }
   ClearHand() {
@@ -103,98 +183,36 @@ class Render {
   }
 }
 
-function evaluateCards(theCard) {
-  const cHandIndex = theCard.indexOf("-");
-  let t = theCard.slice(0, cHandIndex);
-  console.log(t);
-  if (t == "A") return (t = 14);
-  else if (t == "K") return (t = 13);
-  else if (t == "Q") return (t = 12);
-  else if (t == "J") return (t = 11);
-  return parseInt(t);
-}
-
-function comparePoints() {
-  console.log(`Computer has ${computersHand.length} with ${computersHand}`);
-  console.log(`Player has ${playersHand.length} with ${playersHand}`);
-
-  let computer = evaluateCards(computersCard);
-  let player = evaluateCards(playersCard);
-
-  if (computer > player) {
-    if (aDraw) {
-      whenDraw(computersHand);
-    }
-    computersHand.unshift(playersCard);
-    computersHand.unshift(computersCard);
-    winText.textContent = "Computer wins this round";
-    console.log("computer Wins");
-  } else if (player > computer) {
-    if (aDraw) {
-      whenDraw(playersHand);
-    }
-    playersHand.unshift(computersCard);
-    playersHand.unshift(playersCard);
-    winText.textContent = "You won this round";
-    console.log("You won!!!");
-  } else {
-    console.log("draw");
-    if (aDraw) {
-      drawCount *= 3;
-    }
-    aDraw = true;
-
-    drawDeal();
-  }
-}
-
-function whenDraw(winner) {
-  for (let i = 0; i < drawCount; i++) {
-    winner.unshift(cDraw[i]);
-    winner.unshift(pDraw[i]);
-  }
-}
-
-function drawDeal() {
-  cDraw.push(computersCard);
-  pDraw.push(playersCard);
-  for (let i = 1; i < drawCount; i++) {
-    cDraw[i] = computersHand.pop();
-    pDraw[i] = playersHand.pop();
-    render.CardFaceDown();
-  }
-  render.CardFaceUp();
-  comparePoints();
-}
-
 function drawCleanup() {
   for (let i = 0; i <= drawCount; i++) {
-    clearHand();
+    render.ClearHand();
   }
   aDraw = false;
   cDraw.length = 0;
   pDraw.length = 0;
   drawCount = 3;
 }
+const manager = new GameManager();
 const deckOfCards = new Deck();
 const dealer = new Dealer();
 const render = new Render();
 const computer = new Players();
 const player = new Players();
 
-deckOfCards.BuildDeck();
-deckOfCards.ShuffleDeck();
-dealer.DealCards(deckOfCards);
-comparePoints();
+manager.StartGame();
+// deckOfCards.BuildDeck();
+// deckOfCards.ShuffleDeck();
+// dealer.DealCards(deckOfCards);
+// manager.CompareCards();
 
 btn.addEventListener("click", () => {
-  if (aDraw) {
-    drawCleanup();
-  } else {
-    render.ClearHand();
-  }
+  // if (aDraw) {
+  //   drawCleanup();
+  // } else {
+  render.ClearHand();
+  // }
   render.CardFaceUp();
-  comparePoints();
+  manager.CompareCards();
 });
 
 //TODO and bugs
