@@ -11,11 +11,11 @@
  }
 
  body {
-     display: grid;
-     justify-content: center;
-     align-items: center;
      min-height: 100vh;
-     background-color: rgb(80, 107, 27);
+     background-image: url("../images/bgDarkGreen.jpg");
+     background-repeat: no-repeat;
+     background-size: cover;
+     /* background-color: rgb(80, 107, 27); */
      text-align: center;
  }
 
@@ -31,7 +31,7 @@
 
 
  .player,
- .house {
+ .opponent {
      font-size: 2rem;
      font-weight: 700;
      color: white;

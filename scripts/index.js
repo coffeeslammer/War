@@ -16,10 +16,19 @@ class GameManager {
   }
   NextHand() {
     render.ClearHand();
-    render.CardFaceUp();
-    manager.CompareCards();
+    //checks to make sure both players have enough cards in their hand to keep playing
+    if (computer.hand.length > 0 && player.hand.length > 0) {
+      render.CardFaceUp();
+      manager.CompareCards();
+    } else {
+      if (computer.hand.length == 0) {
+        console.log("Computer Loses"); //TODO need to you lose to the screen
+      } else {
+        console.log("You Loses");
+      }
+    }
   }
-  War() {}
+
   //evaluateCards gives the cards a number score since face cards mean nothing.
   //it gives face cards a number to be evaluated which face card is higher if there is one
   //it then returns the card as a number to then check which is hight or a draw
@@ -70,7 +79,7 @@ class GameManager {
     //adding all the cards that were laid out during the draw duel onto the winners deck
     winner.unshift(...computer.draw);
     winner.unshift(...player.draw);
-
+    //reset
     player.draw.length = 0;
     computer.draw.length = 0;
     this.draw = false;
@@ -80,13 +89,23 @@ class GameManager {
     //this puts the original cards into the draw array pile before dealing the rest out
     computer.draw.push(computer.card);
     player.draw.push(player.card);
-    for (let i = 1; i < dealer.drawCount; i++) {
-      computer.draw.push(computer.hand.pop());
-      player.draw.push(player.hand.pop());
-      render.CardFaceDown();
+    //checks to make sure both players have enough cards to continue the draw duel
+    if (computer.hand.length >= 3 && player.hand.length >= 3) {
+      for (let i = 1; i < dealer.drawCount; i++) {
+        computer.draw.push(computer.hand.pop());
+        player.draw.push(player.hand.pop());
+        render.CardFaceDown();
+      }
+
+      render.CardFaceUp();
+      this.CompareCards();
+    } else {
+      if (computer.hand.length < 3) {
+        console.log("Computer Loses"); //TODO need to you lose to the screen
+      } else {
+        console.log("You Loses");
+      }
     }
-    render.CardFaceUp();
-    this.CompareCards();
   }
 }
 class Deck {
@@ -192,12 +211,7 @@ const player = new Players();
 //=============================================Starting Line========================================================
 manager.StartGame();
 
-btn.addEventListener("click", () => {
-  // render.ClearHand();
-  // render.CardFaceUp();
-  // manager.CompareCards();
-  manager.NextHand();
-});
+btn.addEventListener("click", () => manager.NextHand());
 
 //TODO and bugs
 //I need a way to check when someone wins
@@ -205,3 +219,4 @@ btn.addEventListener("click", () => {
 //If out of cards or not enough in a duel draw they loose
 //maybe a little better user interface work as well
 //maybe give a different background color the the player who is getting close to loosing or winning
+//create an opening screen to ask for a name and how many decks you want to use
