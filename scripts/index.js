@@ -21,6 +21,7 @@ class GameManager {
       render.CardFaceUp();
       manager.CompareCards();
     } else {
+      document.querySelector(".gameover").classList.remove("hidden");
       if (computer.hand.length == 0) {
         console.log("Computer Loses"); //TODO need to you lose to the screen
       } else {
@@ -100,6 +101,7 @@ class GameManager {
       render.CardFaceUp();
       this.CompareCards();
     } else {
+      document.querySelector(".gameover").classList.remove("hidden");
       if (computer.hand.length < 3) {
         console.log("Computer Loses"); //TODO need to you lose to the screen
       } else {
@@ -212,7 +214,9 @@ const player = new Players();
 manager.StartGame();
 
 btn.addEventListener("click", () => manager.NextHand());
-
+// while (computer.hand.length > 0 && player.hand.length > 0) {
+//   manager.NextHand();
+// }
 //TODO and bugs
 //I need a way to check when someone wins
 //also a strategy for when a player can't fulfill a draw war. as in they don't have the required amount of cards
